@@ -8,16 +8,11 @@ import java.util.Map;
 
 public class DBConnector implements IDBConnector {
 
-  private Map<String, String> settings;
-
   private static Connection connection = null;
   private static Statement statement = null;
 
-  public DBConnector() {
-    this.settings = new Settings().getDbSettings();
-  }
-
   private void open() {
+    Map<String, String> settings = new Settings().getDbSettings();
     try {
       if(connection == null) {
         connection = DriverManager.getConnection(settings.get("db_url") + "/" + settings.get("db_name"), settings.get("username"), settings.get("password"));
@@ -30,7 +25,7 @@ public class DBConnector implements IDBConnector {
     }
   }
 
-  private void close() {
+  public static void close() {
     if(statement != null) {
       try {
         statement.close();
@@ -49,9 +44,15 @@ public class DBConnector implements IDBConnector {
     }
   }
 
-//  public List executeQuery() {
-//
-//  }
+  public ResultSet executeQuery(String sqlRequest) {
+    this.open();
+    try {
+      return statement.executeQuery(sqlRequest);
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+      return null;
+    }
+  }
 
   public void execute(String sqlRequest) {
     this.open();
@@ -59,8 +60,6 @@ public class DBConnector implements IDBConnector {
       statement.execute(sqlRequest);
     } catch (SQLException ex) {
       ex.printStackTrace();
-    } finally {
-      this.close();
     }
   }
 
